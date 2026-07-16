@@ -1717,7 +1717,7 @@ screen island_map():
         vbox:
             spacing 4
             text "День [current_day] / 7"    color "#FFDD88" size 22
-            text "Визитов сегодня: [visits_today] / 2" color "#FFDD88" size 18
+            text "Визитов сегодня: [visits_today] / [MAX_VISITS_PER_DAY]" color "#FFDD88" size 18
 
     # Меню выбора локации — внизу по центру
     frame:
@@ -1732,15 +1732,17 @@ screen island_map():
 
             text "Куда отправиться?" xalign 0.5 color "#FFFFFF" size 26
 
-            # Нана — активна если есть визиты
-            if visits_today < 2:
-                textbutton "🍍  Пляж Наны" action Jump("nana_visit_router") style "map_button"
-            else:
-                textbutton "🍍  Пляж Наны (уже были сегодня)" action NullAction() style "map_button_disabled"
+            # Девушки — по одной кнопке на запись в реестре GIRLS
+            for girl in GIRLS.values():
+                if current_day < girl.unlock_day:
+                    textbutton "[girl.emoji]  [girl.name] (скоро)" action NullAction() style "map_button_disabled"
+                elif visits_today < MAX_VISITS_PER_DAY:
+                    textbutton "[girl.emoji]  Пляж [girl.name]" action [SetVariable("current_girl", girl.id), Jump("visit_router")] style "map_button"
+                else:
+                    textbutton "[girl.emoji]  Пляж [girl.name] (уже были сегодня)" action NullAction() style "map_button_disabled"
 
-            # Другие локации — заглушки
-            textbutton "🍒  Холм Вишни (скоро)"     action NullAction() style "map_button_disabled"
-            textbutton "🍋  Лимонная роща (скоро)"  action NullAction() style "map_button_disabled"
+            # Дом — сохранения/загрузка/настройки
+            textbutton "🏠  Дом" action Jump("player_house") style "map_button"
 
             null height 8
 
@@ -1749,3 +1751,37 @@ screen island_map():
                 textbutton "🌙  Завершить день"  action Jump("next_day") style "map_button"
             else:
                 textbutton "🌟  Финальный день — завершить" action Jump("game_ending") style "map_button"
+
+
+# ========================
+# ДОМ ИГРОКА (СОХРАНЕНИЯ/ЗАГРУЗКА)
+# ========================
+
+screen player_house():
+    tag menu
+
+    add "bg/bg_02.jpg"
+    add Solid("#00000066")
+
+    frame:
+        xalign 0.5
+        yalign 0.5
+        xmaximum 900
+        background Frame("#00000099", 20, 20)
+        padding (50, 40)
+
+        vbox:
+            spacing 20
+            xalign 0.5
+
+            text "Твой дом" style "pacifico_title"
+
+            null height 10
+
+            textbutton "Сохранить"  action ShowMenu("save") xalign 0.5 style "map_button"
+            textbutton "Загрузить"  action ShowMenu("load") xalign 0.5 style "map_button"
+            textbutton "Настройки"  action ShowMenu("preferences") xalign 0.5 style "map_button"
+
+            null height 10
+
+            textbutton "Вернуться на остров" action Return() xalign 0.5 style "map_button"
