@@ -61,6 +61,26 @@ init python:
     def has_flag(name):
         return name in relationship_flags
 
+    # Чтобы игрок не мог второй раз подряд ткнуть тот же вариант ответа в
+    # рамках одной стадии: каждый вариант помечается использованным после
+    # выбора и пропадает из меню (см. "if choice_open(...)" на пунктах
+    # menu в game/characters/*.rpy). Когда использованы все варианты —
+    # набор сбрасывается, чтобы меню не осталось пустым.
+    def _choice_key(girl_id, stage, idx):
+        return "%s_stage%d_choice%d_used" % (girl_id, stage, idx)
+
+    def choice_open(girl_id, stage, idx):
+        return not has_flag(_choice_key(girl_id, stage, idx))
+
+    def use_choice(girl_id, stage, idx):
+        set_flag(_choice_key(girl_id, stage, idx))
+
+    def reset_choices_if_exhausted(girl_id, stage, count):
+        keys = [_choice_key(girl_id, stage, i) for i in range(count)]
+        if all(k in relationship_flags for k in keys):
+            for k in keys:
+                relationship_flags.discard(k)
+
 
 # Нана — ананас
 init python:
