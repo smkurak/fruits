@@ -9,8 +9,8 @@ default current_day = 1
 default visits_today = 0
 define MAX_VISITS_PER_DAY = 2
 
-# Фоны
-image bg pineapple_beach = "bg/pineapple_beach.jpg"
+# Фоны генерируются автоматически из реестра GIRLS (game/characters.rpy)
+# как "bg <id>", напр. "bg nana", "bg ivi".
 
 define config.fade_music = 1.0
 

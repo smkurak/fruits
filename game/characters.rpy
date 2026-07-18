@@ -74,17 +74,44 @@ init python:
         bg="bg/pineapple_beach.jpg",
     )
 
+# Иви — киви
+init python:
+    register_girl(
+        id="ivi", name="Иви", fruit="киви", emoji="🥝",
+        color="#8BC34A", outline=(2, "#33691E", 0, 0),
+        flaw="Замкнутость", growth="Открытость",
+        stage_thresholds=[(0, 1), (15, 2), (35, 3), (60, 4)],
+        sprite_thresholds=[(0, "10"), (15, "20"), (35, "30")],
+        sprite_stub="chars/ivi/ivi",
+        bg="bg/kiwi_forest.jpg",
+    )
 
-# Спрайты по реестру — ConditionSwitch на каждую девушку.
+
+# Спрайты и фоны по реестру — генерируются для каждой девушки.
+# Если файла ещё нет на диске (арт не готов) — подставляется плейсхолдер
+# Ren'Py вместо падения игры; как только реальный файл появится по тому
+# же пути, лишний код трогать не надо.
+#
 # ConditionSwitch берёт первое истинное условие, поэтому пороги проверяем
 # от большего к меньшему (иначе самый низкий порог "съест" все остальные).
+# Самый нижний порог всегда "True" (а не ">= 0"), иначе отрицательный
+# affection (после рискованного выбора в меню) не попадает ни в одно
+# условие, и ConditionSwitch падает с "could not choose a displayable".
 init python:
     for _girl in GIRLS.values():
         _cases = []
-        for _threshold, _suffix in reversed(_girl.sprite_thresholds):
-            _cases.append("get_affection('%s') >= %d" % (_girl.id, _threshold))
-            _cases.append("%s_%s.png" % (_girl.sprite_stub, _suffix))
+        _thresholds_desc = list(reversed(_girl.sprite_thresholds))
+        for _i, (_threshold, _suffix) in enumerate(_thresholds_desc):
+            _path = "%s_%s.png" % (_girl.sprite_stub, _suffix)
+            _is_lowest = (_i == len(_thresholds_desc) - 1)
+            _cases.append("True" if _is_lowest else "get_affection('%s') >= %d" % (_girl.id, _threshold))
+            _cases.append(_path if renpy.loadable(_path) else Placeholder("girl", full=True))
         renpy.image(_girl.id, ConditionSwitch(*_cases))
+
+        renpy.image(
+            "bg %s" % _girl.id,
+            _girl.bg if renpy.loadable(_girl.bg) else Placeholder("bg"),
+        )
 
 
 # ============================================
@@ -112,3 +139,31 @@ label visit_router:
 label return_to_map:
     call screen island_map
     return
+
+
+# ============================================
+# DEBUG: СИМПАТИЯ НА ЭКРАНЕ
+# ============================================
+# Показывает affection всех девушек в углу поверх любого экрана —
+# удобно смотреть, как меняются цифры прямо во время диалога.
+# Только в режиме разработки (config.developer == True при запуске из
+# SDK/launcher, False в собранном билде) — игрок в релизе это не увидит.
+
+screen debug_affection():
+    zorder 101
+    frame:
+        xalign 1.0
+        yalign 0.0
+        xoffset -20
+        yoffset 20
+        background Frame("#00000088", 12, 12)
+        padding (14, 10)
+        vbox:
+            spacing 2
+            text "DEBUG" size 16 color "#FF8888" bold True
+            for _girl in GIRLS.values():
+                text "%s: %d" % (_girl.name, get_affection(_girl.id)) size 16 color "#FFFFFF"
+
+init python:
+    if config.developer:
+        config.overlay_screens.append("debug_affection")

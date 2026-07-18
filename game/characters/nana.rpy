@@ -9,7 +9,7 @@
 # ----------------------------------------
 
 label nana_stage1:
-    scene bg pineapple_beach with fade
+    scene bg nana with fade
     play music "audio/music/nana_music_10.mp3" fadein 2.0
 
     show nana at center with dissolve
@@ -52,7 +52,7 @@ label nana_stage1:
 # ----------------------------------------
 
 label nana_stage2:
-    scene bg pineapple_beach with fade
+    scene bg nana with fade
     play music "audio/music/nana_music_20.mp3" fadein 2.0
 
     show nana at center with dissolve
@@ -94,7 +94,7 @@ label nana_stage2:
 # ----------------------------------------
 
 label nana_stage3:
-    scene bg pineapple_beach with fade
+    scene bg nana with fade
     play music "audio/music/nana_music_30.mp3" fadein 2.0
     show nana at center with dissolve
 
@@ -135,7 +135,7 @@ label nana_stage3:
 # ----------------------------------------
 
 label nana_stage4:
-    scene bg pineapple_beach with fade
+    scene bg nana with fade
     play music "audio/music/nana_music_30.mp3" fadein 2.0
 
     show nana at center with dissolve
