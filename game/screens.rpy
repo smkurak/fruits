@@ -1741,6 +1741,12 @@ screen island_map():
                 else:
                     textbutton "[girl.emoji]  Пляж [girl.name] (уже были сегодня)" action NullAction() style "map_button_disabled"
 
+            # Прогулка по острову — гарантированно находишь предмет
+            if visits_today < MAX_VISITS_PER_DAY:
+                textbutton "🔍  Прогулка по острову" action Jump("explore_island") style "map_button"
+            else:
+                textbutton "🔍  Прогулка по острову (уже были сегодня)" action NullAction() style "map_button_disabled"
+
             # Дом — сохранения/загрузка/настройки
             textbutton "🏠  Дом" action Jump("player_house") style "map_button"
 

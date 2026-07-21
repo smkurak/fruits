@@ -10,7 +10,7 @@ init python:
     class Girl(object):
         def __init__(self, id, name, fruit, emoji, color, outline,
                      flaw, growth, stage_thresholds, sprite_thresholds,
-                     sprite_stub, bg, unlock_day=1):
+                     sprite_stub, bg, unlock_day=1, favorite_item=None):
             self.id = id
             self.name = name
             self.fruit = fruit
@@ -24,6 +24,7 @@ init python:
             self.sprite_stub = sprite_stub  # "chars/nana/nana"
             self.bg = bg
             self.unlock_day = unlock_day
+            self.favorite_item = favorite_item  # id из ITEMS (game/exploration.rpy) или None
             self.say = Character(name, image=id, who_color=color,
                                   who_outlines=[outline])
 
@@ -85,6 +86,24 @@ init python:
             for k in keys:
                 relationship_flags.discard(k)
 
+    # Найденные на прогулке предметы (game/exploration.rpy) — тоже просто
+    # флаги, без экрана инвентаря. Дарится только "любимый" предмет
+    # девушки (Girl.favorite_item), проверяется в visit_router.
+    def has_item(item_id):
+        return has_flag("has_item_%s" % item_id)
+
+    def give_item(item_id):
+        set_flag("has_item_%s" % item_id)
+
+    def has_gift_ready(girl_id):
+        girl = GIRLS[girl_id]
+        return girl.favorite_item and has_item(girl.favorite_item)
+
+    def use_favorite_item(girl_id):
+        girl = GIRLS[girl_id]
+        relationship_flags.discard("has_item_%s" % girl.favorite_item)
+        add_affection(girl_id, 20)
+
 
 # Нана — ананас
 init python:
@@ -96,6 +115,7 @@ init python:
         sprite_thresholds=[(0, "10"), (15, "20"), (35, "30")],
         sprite_stub="chars/nana/nana",
         bg="bg/pineapple_beach.jpg",
+        favorite_item="seashell",
     )
 
 # Иви — киви
@@ -108,6 +128,7 @@ init python:
         sprite_thresholds=[(0, "10"), (15, "20"), (35, "30")],
         sprite_stub="chars/ivi/ivi",
         bg="bg/kiwi_forest.jpg",
+        favorite_item="moss_stone",
     )
 
 
@@ -157,6 +178,14 @@ default n = None
 label visit_router:
     $ visits_today += 1
     $ n = GIRLS[current_girl].say
+
+    if has_gift_ready(current_girl):
+        jump expression "%s_gift_offer" % current_girl
+
+    jump expression "%s_stage%d" % (current_girl, get_stage_index(current_girl))
+
+
+label gift_offer_continue:
     jump expression "%s_stage%d" % (current_girl, get_stage_index(current_girl))
 
 
