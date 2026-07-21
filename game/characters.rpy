@@ -49,6 +49,10 @@ init python:
         girl = GIRLS[girl_id]
         return _stage_from_thresholds(get_affection(girl_id), girl.sprite_thresholds)
 
+    def girl_completed(girl_id):
+        girl = GIRLS[girl_id]
+        return get_stage_index(girl_id) >= girl.stage_thresholds[-1][1]
+
     def get_affection(girl_id):
         return affection.get(girl_id, 0)
 
